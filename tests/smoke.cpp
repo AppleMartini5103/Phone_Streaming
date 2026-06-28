@@ -1,14 +1,21 @@
 #include <cstdio>
 #include "streamcore/types.hpp"
+#include "streamcore/bufferPool.hpp"
 
 int main() {
     using namespace streamcore;
     std::printf("link OK: %s\n", version());
 
-    RawVideoFrame f;
-    f.width = 1280; f.height = 720; f.pts_us = 33333;
-    std::printf("RawVideoFrame %dx%d pts=%lldus data=%s\n",
-                f.width, f.height, (long long)f.pts_us,
-                f.data ? "set" : "null");
+    BufferPool pool(2, 1024);
+    std::printf("start = %zu\n", pool.available());
+    {
+        auto a = pool.acquire();
+        auto b = pool.acquire();
+        std::printf("borrowed = %zu\n", pool.available());
+        auto c = pool.acquire();
+        std::printf("c = %s\n", c ? "valid" : "null");
+    }
+    
+    std::printf("returned = %zu\n", pool.available());
     return 0;
 }
